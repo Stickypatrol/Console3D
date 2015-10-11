@@ -11,16 +11,23 @@ namespace Console3D
     {
         static Camera SceneCamera;
         static char[,,] Matrix;
+        static int timer;
+
         static void Main(string[] args)
         {
-            Matrix = new char[10, 10, 10];
-            for (int i = 0; i < 10; i++)
+            Matrix = new char[20, 20, 20];
+            for (int i = 0; i < 20; i++)
             {
-                for (int o = 0; o < 10; o++)
+                for (int o = 0; o < 20; o++)
                 {
-                    for (int p = 0; p < 10; p++)
+                    for (int p = 0; p < 20; p++)
                     {
-                        if (1==1)
+                        /*if ((i == 0 && o == 9) || (i == 9 && o == 9) || (i == 0 && o == 0) || (i == 9 && o == 0) ||
+                            (i == 0 && p == 9) || (i == 9 && p == 9) || (i == 0 && p == 0) || (i == 9 && p == 0) ||
+                            (p == 0 && o == 9) || (p == 9 && o == 9) || (p == 0 && o == 0) || (p == 9 && o == 0)
+                            )
+                        */
+                        if((int)Math.Sqrt(Math.Pow(i, 2) + Math.Pow(o,2) + Math.Pow(p, 2)) == 10)
                         {
                             Matrix[i, o, p] = '*';
                         }
@@ -31,7 +38,7 @@ namespace Console3D
                     }
                 }
             }
-            SceneCamera = new Camera(new Vector3(-20, 0, 0),new Vector3(0, 0, (float)Math.PI/2));
+            SceneCamera = new Camera(new Vector3(-30, 5, 5),new Vector3(0, 0, (float)Math.PI/2));
             ConsoleKeyInfo Input;
             while(1==1)
             {
@@ -42,6 +49,11 @@ namespace Console3D
                     else if (Input.Key == ConsoleKey.RightArrow) { SceneCamera.Rotation.X += (float)Math.PI/80f; }
                     else if (Input.Key == ConsoleKey.UpArrow) { SceneCamera.Rotation.Z += (float)Math.PI / 80f; }
                     else if (Input.Key == ConsoleKey.DownArrow) { SceneCamera.Rotation.Z += -(float)Math.PI / 80f; }
+                    else if (Input.Key == ConsoleKey.A) { SceneCamera.Position.Y += 0.2f; }
+                    else if (Input.Key == ConsoleKey.D) { SceneCamera.Position.Y += -0.2f; }
+                    else if (Input.Key == ConsoleKey.W) { SceneCamera.Position.X += 0.2f; }
+                    else if (Input.Key == ConsoleKey.S) { SceneCamera.Position.X += -0.2f; }
+
                 }
                 DrawScene();
                 Thread.Sleep(200);
@@ -50,21 +62,33 @@ namespace Console3D
         static void DrawScene()
         {
             string drawBuffer = "";
+            timer++;
             for (int i = 0; i < 25; i++)
             {
                 for (int p = 0; p < 79; p++)
                 {
-                    if (CheckRay(SceneCamera.Position, SceneCamera.Rotation, p, i))
+                    if(timer > 9)
                     {
-                        drawBuffer += "*";
+                        timer = 0;
                     }
-                    else if (i == 0 || p == 0 || i == 24 || p == 78)
+                    if(i == 1 && p == 1)
                     {
-                        drawBuffer += "X";
+                        drawBuffer += timer;
                     }
                     else
                     {
-                        drawBuffer += " ";
+                        if (i == 0 || p == 0 || i == 24 || p == 78)
+                        {
+                            drawBuffer += "X";
+                        }
+                        else if (CheckRay(SceneCamera.Position, SceneCamera.Rotation, p, i))
+                        {
+                            drawBuffer += "*";
+                        }
+                        else
+                        {
+                            drawBuffer += " ";
+                        }
                     }
                 }
                 if(i != 24)
@@ -77,12 +101,12 @@ namespace Console3D
         }
         static bool CheckRay(Vector3 position, Vector3 rotation, int column, int row)
         {
-            float Xoffset = ((column - 39f) * (float)Math.PI / 180f);
-            float Zoffset = ((row - 12f * 3) * (float)Math.PI / 180f);
+            float Xoffset = ((column - 39f) * (45f / 39f) * (float)Math.PI / 180f);
+            float Zoffset = ((row - 12f) * (45f / 12f) * (float)Math.PI / 180f);
             rotation.X += Xoffset;
             rotation.Z += Zoffset;
             Vector3 coord = new Vector3(0, 0, 0);
-            for (int i = 0; i < 40; i++)
+            for (int i = 0; i < 50; i++)
             {
                 if(rotation.X > 0)
                 {
