@@ -63,7 +63,7 @@ namespace Console3D
                 for (int p = 0; p < 79; p++)
                 {
                     
-                    if(i == 1 && p == 1)
+                    if(i == 0 && p == 0)
                     {
                         drawBuffer.Append(timer);
                     }
@@ -75,7 +75,15 @@ namespace Console3D
                         }
                         else
                         {
-                            drawBuffer.Append(CheckRay(SceneCamera.Position, SceneCamera.Rotation, p, i));
+                            int result = CheckRay(SceneCamera.Position, SceneCamera.Rotation, p, i);
+                            if (result == 0)
+                            {
+                                drawBuffer.Append(' ');
+                            }
+                            else
+                            {
+                                drawBuffer.Append(result);
+                            }
                         }
                     }
                 }
@@ -87,14 +95,14 @@ namespace Console3D
             Console.Clear();
             Console.Write(drawBuffer.ToString());
         }
-        static char CheckRay(Vector3 position, Vector3 rotation, int column, int row)
+        static int CheckRay(Vector3 position, Vector3 rotation, int column, int row)
         {
             float Xoffset = ((column - 39f) * (30f / 39f) * (float)Math.PI / 180f);
             float Zoffset = ((row - 12f) * (30f / 12f) * (float)Math.PI / 180f);
             rotation.X += Xoffset;
             rotation.Z += Zoffset;
             Vector3 coord = new Vector3(0, 0, 0);
-            for (int i = 0; i < 80; i++)
+            for (int i = 0; i < 49; i++)
             {
                 coord.X = (int)Math.Round((i * Math.Cos(rotation.X) * Math.Sin(rotation.Z) + SceneCamera.Position.X));
                 coord.Y = (int)Math.Round((i * Math.Sin(rotation.X) * Math.Sin(rotation.Z) + SceneCamera.Position.Y));
@@ -103,11 +111,11 @@ namespace Console3D
                 {
                     if(Matrix[(int)coord.X, (int)coord.Y, (int)coord.Z] != ' ')
                     {
-                        return Matrix[(int)coord.X, (int)coord.Y, (int)coord.Z];
+                        return i / 5;
                     }
                 }
             }
-            return ' ';
+            return 0;
         }
         struct Vector3
         {
