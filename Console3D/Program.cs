@@ -22,12 +22,7 @@ namespace Console3D
                 {
                     for (int p = 0; p < 20; p++)
                     {
-                        /*if ((i == 0 && o == 9) || (i == 9 && o == 9) || (i == 0 && o == 0) || (i == 9 && o == 0) ||
-                            (i == 0 && p == 9) || (i == 9 && p == 9) || (i == 0 && p == 0) || (i == 9 && p == 0) ||
-                            (p == 0 && o == 9) || (p == 9 && o == 9) || (p == 0 && o == 0) || (p == 9 && o == 0)
-                            )
-                        */
-                        if((int)Math.Sqrt(Math.Pow(i, 2) + Math.Pow(o,2) + Math.Pow(p, 2)) == 10)
+                        if((i % 19 == 0 && o % 19 == 0) || (o % 19 == 0 && p % 19 == 0) || (i % 19 == 0 && p % 19 == 0))
                         {
                             Matrix[i, o, p] = '*';
                         }
@@ -38,7 +33,7 @@ namespace Console3D
                     }
                 }
             }
-            SceneCamera = new Camera(new Vector3(-30, 5, 5),new Vector3(0, 0, (float)Math.PI/2));
+            SceneCamera = new Camera(new Vector3(-30, 10, 10),new Vector3(0, 0, (float)Math.PI/2));
             ConsoleKeyInfo Input;
             while(1==1)
             {
@@ -49,8 +44,8 @@ namespace Console3D
                     else if (Input.Key == ConsoleKey.RightArrow) { SceneCamera.Rotation.X += (float)Math.PI/80f; }
                     else if (Input.Key == ConsoleKey.UpArrow) { SceneCamera.Rotation.Z += (float)Math.PI / 80f; }
                     else if (Input.Key == ConsoleKey.DownArrow) { SceneCamera.Rotation.Z += -(float)Math.PI / 80f; }
-                    else if (Input.Key == ConsoleKey.A) { SceneCamera.Position.Y += 0.2f; }
-                    else if (Input.Key == ConsoleKey.D) { SceneCamera.Position.Y += -0.2f; }
+                    else if (Input.Key == ConsoleKey.A) { SceneCamera.Position.Y += -0.2f; }
+                    else if (Input.Key == ConsoleKey.D) { SceneCamera.Position.Y += 0.2f; }
                     else if (Input.Key == ConsoleKey.W) { SceneCamera.Position.X += 0.2f; }
                     else if (Input.Key == ConsoleKey.S) { SceneCamera.Position.X += -0.2f; }
 
@@ -61,79 +56,58 @@ namespace Console3D
         }
         static void DrawScene()
         {
-            string drawBuffer = "";
-            timer++;
+            StringBuilder drawBuffer = new StringBuilder(26*80);
+            timer = (timer == 9) ? timer = 0 : timer += 1;
             for (int i = 0; i < 25; i++)
             {
                 for (int p = 0; p < 79; p++)
                 {
-                    if(timer > 9)
-                    {
-                        timer = 0;
-                    }
+                    
                     if(i == 1 && p == 1)
                     {
-                        drawBuffer += timer;
+                        drawBuffer.Append(timer);
                     }
                     else
                     {
                         if (i == 0 || p == 0 || i == 24 || p == 78)
                         {
-                            drawBuffer += "X";
-                        }
-                        else if (CheckRay(SceneCamera.Position, SceneCamera.Rotation, p, i))
-                        {
-                            drawBuffer += "*";
+                            drawBuffer.Append('X');
                         }
                         else
                         {
-                            drawBuffer += " ";
+                            drawBuffer.Append(CheckRay(SceneCamera.Position, SceneCamera.Rotation, p, i));
                         }
                     }
                 }
-                if(i != 24)
+                if (i < 24)
                 {
-                    drawBuffer += "\n";
+                    drawBuffer.Append('\n');
                 }
             }
             Console.Clear();
-            Console.Write(drawBuffer);
+            Console.Write(drawBuffer.ToString());
         }
-        static bool CheckRay(Vector3 position, Vector3 rotation, int column, int row)
+        static char CheckRay(Vector3 position, Vector3 rotation, int column, int row)
         {
-            float Xoffset = ((column - 39f) * (45f / 39f) * (float)Math.PI / 180f);
-            float Zoffset = ((row - 12f) * (45f / 12f) * (float)Math.PI / 180f);
+            float Xoffset = ((column - 39f) * (30f / 39f) * (float)Math.PI / 180f);
+            float Zoffset = ((row - 12f) * (30f / 12f) * (float)Math.PI / 180f);
             rotation.X += Xoffset;
             rotation.Z += Zoffset;
             Vector3 coord = new Vector3(0, 0, 0);
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 80; i++)
             {
-                if(rotation.X > 0)
-                {
-                    coord.X = (int)(i * Math.Cos(rotation.X) * Math.Sin(rotation.Z) + SceneCamera.Position.X);
-                }
-                else
-                {
-                    coord.X = -(int)(i * Math.Cos(rotation.X) * Math.Sin(rotation.Z) + SceneCamera.Position.X);
-                }
-                if(rotation.Z > 0)
-                {
-                    coord.Y = (int)(i * Math.Sin(rotation.X) * Math.Sin(rotation.Z) + SceneCamera.Position.Y);
-                }
-                else
-                {
-                    coord.Y = -(int)(i * Math.Sin(rotation.X) * Math.Sin(rotation.Z) + SceneCamera.Position.Y);
-                }
+                coord.X = (int)Math.Round((i * Math.Cos(rotation.X) * Math.Sin(rotation.Z) + SceneCamera.Position.X));
+                coord.Y = (int)Math.Round((i * Math.Sin(rotation.X) * Math.Sin(rotation.Z) + SceneCamera.Position.Y));
                 coord.Z = (int)(i * Math.Cos(rotation.Z) + SceneCamera.Position.Z);
                 if (Matrix.GetLength(0) > coord.X && Matrix.GetLength(1) > coord.Y && Matrix.GetLength(2) > coord.Z && coord.X >= 0 && coord.Y >= 0 && coord.Z >= 0)
                 {
-                    if (Matrix[(int)coord.X, (int)coord.Y, (int)coord.Z] != ' ')
+                    if(Matrix[(int)coord.X, (int)coord.Y, (int)coord.Z] != ' ')
                     {
-                        return true;
+                        return Matrix[(int)coord.X, (int)coord.Y, (int)coord.Z];
                     }
                 }
             }
-            return false;
+            return ' ';
         }
         struct Vector3
         {
